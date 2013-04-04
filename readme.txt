@@ -48,3 +48,10 @@ How to use it:
 Other notes:
 * The URL is stored in the "extensions.bootstrapper.bootstrapURL" preference.
 * grep for "Bootstrapper" in logcat to look for any errors.
+* to generate the icon files:
+  convert boot.png -resize 48x48 -flop ./extension/icon.png
+  convert boot.png -resize 64x64 -flop ./extension/icon64.png
+  See
+  http://erikvold.com/blog/index.cfm/2011/2/7/restartless-firefox-addons-part-3-icons
+  and
+  https://developer.mozilla.org/en-US/docs/Install_Manifests#iconURL

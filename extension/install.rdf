@@ -18,8 +18,17 @@
       </Description>
     </em:targetApplication>
 
+    <em:targetApplication>
+      <!-- Firefox Desktop -->
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>13</em:minVersion>
+        <em:maxVersion>*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
     <!-- Front End MetaData -->
-    <em:name>Bootstrapper</em:name>
+    <em:name>Fennec Bootstrapper</em:name>
     <em:description>Dynamically load scripts with chrome privileges.</em:description>
     <em:creator>Brian Nicholson</em:creator>
   </Description>

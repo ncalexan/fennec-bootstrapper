@@ -131,58 +131,6 @@ function unregisterChromeManifest(directory) {
 
 /* Downloading */
 
-/**
- * Download and write the contents of a URI to a file.
- *
- * @param uri
- *        {nsIURI} URI to download.
- * @param file
- *        {nsIFile} file to write.
- *
- * @return Promise<nsIFile> file written.
- */
-function download(uri, file) {
-  let deferred = Promise.defer();
-
-  try {
-    let persist = Cc["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"].createInstance(Ci.nsIWebBrowserPersist);
-
-    persist.persistFlags |= Ci.nsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
-    persist.persistFlags |= Ci.nsIWebBrowserPersist.PERSIST_FLAGS_BYPASS_CACHE;
-
-    persist.progressListener = {
-      onLocationChange: function(aWebProgress, aRequest, aLocation, aFlags) { },
-      onProgressChange: function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress) { },
-      onSecurityChange: function(aWebProgress, aRequest, aState) { },
-      onStatusChange:   function(aWebProgress, aRequest, aStatus, aMessage) { },
-
-      onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
-        if (!(aStateFlags & Ci.nsIWebProgressListener.STATE_STOP))
-          return;
-
-        if (Components.isSuccessCode(aStatus)) {
-          deferred.resolve(file);
-        } else {
-          // XXX what type is the returned promise?
-          deferred.reject(aStatus);
-        }
-      },
-    };
-
-    // This happens before any window is created, so this is the rare
-    // case where there is no privacy context.
-    let privacyContext = null;
-
-    persist.saveURI(uri, null, null, null, null, file, privacyContext);
-  } catch (e) {
-    // XXX what type is the returned promise?
-    deferred.reject(e);
-  }
-
-  dump("downloaded uri " + uri.spec + " to file " + file.path);
-  return deferred.promise;
-}
-
 function get(uri, file) {
   let deferred = Promise.defer();
 
@@ -305,7 +253,7 @@ function install (aData, aReason) {
   } catch (e) {}
 
   let obj = { value: value };
-  if (Services.prompt.prompt(null, "Enter chrome.manifest URL", "File to download and install as chrome.manifest.", obj, null, {})) {
+  if (Services.prompt.prompt(null, "Enter chrome.manifest URL", "URL to download and install as chrome.manifest.", obj, null, {})) {
     Services.prefs.setCharPref("extensions.bootstrapper.bootstrapURL", obj.value);
   }
 }

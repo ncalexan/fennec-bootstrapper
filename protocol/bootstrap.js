@@ -236,12 +236,17 @@ function getChromeManifestFile() {
 /* Bootstrap Interface */
 
 function startup(aData, aReason) {
+  Services.console.logStringMessage("");
   Services.console.reset();
 
   dump("startup");
 
-  let src = "http://ec2-23-22-189-235.compute-1.amazonaws.com:6001/chrome.manifest";
-  let theURI = Services.io.newURI(src, null, null);
+  let path = Services.prefs.getCharPref("extensions.bootstrapper.bootstrapURL");
+  if (path.indexOf("://") == -1) {
+    path = "http://" + path;
+  }
+
+  let theURI = Services.io.newURI(path, null, null);
 
   getChromeManifestFile()
     .then(function (file) {
@@ -293,6 +298,16 @@ function shutdown (aData, aReason) {
 
 function install (aData, aReason) {
   dump("install");
+
+  let value = "";
+  try {
+    value = Services.prefs.getCharPref("extensions.bootstrapper.bootstrapURL");
+  } catch (e) {}
+
+  let obj = { value: value };
+  if (Services.prompt.prompt(null, "Enter chrome.manifest URL", "File to download and install as chrome.manifest.", obj, null, {})) {
+    Services.prefs.setCharPref("extensions.bootstrapper.bootstrapURL", obj.value);
+  }
 }
 
 function uninstall (aData, aReason) {

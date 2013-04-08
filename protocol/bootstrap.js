@@ -21,6 +21,8 @@ function dump(msg) {
 
 /* Bootstrapper protocol. */
 
+let principal = Cc["@mozilla.org/systemprincipal;1"].createInstance(Ci.nsIPrincipal);
+
 function BootstrapperProtocol() {
 }
 
@@ -55,8 +57,10 @@ BootstrapperProtocol.prototype = {
     // channel.loadFlags |= Ci.nsIRequest.INHIBIT_CACHING;
     // channel.loadFlags |= Ci.nsIRequest.INHIBIT_PERSISTENT_CACHING;
 
-    // /* Have the URL bar change to the new URL */
-    // channel.setRequestHeader("X-Moz-Is-Feed", "1", false);
+    channel.owner = principal;
+    channel.loadFlags &= ~Ci.nsIChannel.LOAD_REPLACE;
+    channel.originalURI = aURI;
+
     return channel;
   },
 
@@ -81,7 +85,7 @@ else
  * Register the chrome protocol.
  */
 function registerProtocol(value) {
-  let manager = Cm.QueryInterface(Ci.nsIComponentRegistrar);   
+  let manager = Cm.QueryInterface(Ci.nsIComponentRegistrar);
   let proto = BootstrapperProtocol.prototype;
   manager.registerFactory(proto.classID, proto.classDescription, proto.contractID, proto.factory);
 
@@ -92,7 +96,7 @@ function registerProtocol(value) {
  * Unregister the chrome protocol.
  */
 function unregisterProtocol(value) {
-  let manager = Cm.QueryInterface(Ci.nsIComponentRegistrar);   
+  let manager = Cm.QueryInterface(Ci.nsIComponentRegistrar);
   let proto = BootstrapperProtocol.prototype;
   manager.unregisterFactory(proto.classID, proto.factory);
 
@@ -142,20 +146,20 @@ function download(uri, file) {
 
   try {
     let persist = Cc["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"].createInstance(Ci.nsIWebBrowserPersist);
-  
+
     persist.persistFlags |= Ci.nsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
     persist.persistFlags |= Ci.nsIWebBrowserPersist.PERSIST_FLAGS_BYPASS_CACHE;
-  
+
     persist.progressListener = {
       onLocationChange: function(aWebProgress, aRequest, aLocation, aFlags) { },
       onProgressChange: function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress) { },
       onSecurityChange: function(aWebProgress, aRequest, aState) { },
       onStatusChange:   function(aWebProgress, aRequest, aStatus, aMessage) { },
-  
+
       onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
         if (!(aStateFlags & Ci.nsIWebProgressListener.STATE_STOP))
           return;
-  
+
         if (Components.isSuccessCode(aStatus)) {
           deferred.resolve(file);
         } else {
@@ -182,7 +186,7 @@ function download(uri, file) {
 function get(uri, file) {
   let deferred = Promise.defer();
 
-  var xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
+  let xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
         .createInstance(Ci.nsIXMLHttpRequest);
   // For the sake of simplicity, don't tie this request to any UI.
   xhr.mozBackgroundRequest = true;
@@ -190,7 +194,7 @@ function get(uri, file) {
   try {
     xhr.open("GET", uri.spec, false);
     xhr.channel.loadFlags |= Ci.nsIRequest.LOAD_BYPASS_CACHE;
-    
+
     // prevent the "not well-formed" errors for local XHRs
     xhr.overrideMimeType("text/plain");
 
@@ -200,7 +204,7 @@ function get(uri, file) {
   }
 
   if (xhr.readyState == 4 && (xhr.status == 200 || (xhr.status == 0 && xhr.responseText))) {
-    var stream = FileUtils.openSafeFileOutputStream(file);
+    let stream = FileUtils.openSafeFileOutputStream(file);
     stream.write(xhr.responseText, xhr.responseText.length);
     stream.flush();
     stream.close();

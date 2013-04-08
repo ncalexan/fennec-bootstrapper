@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
-    <em:id>twitterprotocol@kaply.com</em:id>
+    <em:id>fennec-bootstrapper-protocol@XXX.com</em:id>
     <em:type>2</em:type>
-    <em:name>Twitter Protocol</em:name>
+    <em:bootstrap>true</em:bootstrap>
+
+    <em:name>Fennec Bootstrapper Protocol</em:name>
     <em:version>0.1</em:version>
-    <em:creator>Mike Kaply</em:creator>
+    <em:creator>Nick Alexander</em:creator>
     <em:targetApplication>
       <!-- Fennec Native Java UI -->
       <Description>

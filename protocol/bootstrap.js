@@ -256,6 +256,10 @@ function startup(aData, aReason) {
       registerChromeManifest(file.parent);
       return Promise.resolve(file);
     })
+    .then(function (file) {
+      Services.prefs.setBoolPref("nglayout.debug.disable_xul_cache", 1);
+      return Promise.resolve(file);
+    })
     .then(function success(value) {
       dump("startup success: " + value);
     }, function failure(reason) {
@@ -274,6 +278,10 @@ function shutdown (aData, aReason) {
     .then(function(file) {
        // Protocol should be unregistered after manifest.
       unregisterProtocol();
+      return Promise.resolve(file);
+    })
+    .then(function (file) {
+      Services.prefs.setBoolPref("nglayout.debug.disable_xul_cache", 0);
       return Promise.resolve(file);
     })
     .then(function success(value) {

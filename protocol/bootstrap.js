@@ -11,7 +11,6 @@ let Cm = Components.manager;
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/FileUtils.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
-Cu.import("resource://gre/modules/commonjs/sdk/core/promise.js");
 
 let LOG_TAG = "protocol/bootstrap.js";
 
@@ -131,25 +130,20 @@ function unregisterChromeManifest(directory) {
 
 /* Downloading */
 
-function get(uri, file) {
-  let deferred = Promise.defer();
-
+function getSynchronous(uri, file) {
   let xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"]
         .createInstance(Ci.nsIXMLHttpRequest);
   // For the sake of simplicity, don't tie this request to any UI.
   xhr.mozBackgroundRequest = true;
 
-  try {
-    xhr.open("GET", uri.spec, false);
-    xhr.channel.loadFlags |= Ci.nsIRequest.LOAD_BYPASS_CACHE;
+  xhr.open("GET", uri.spec, false);
+  xhr.channel.loadFlags |= Ci.nsIRequest.LOAD_BYPASS_CACHE;
 
-    // prevent the "not well-formed" errors for local XHRs
-    xhr.overrideMimeType("text/plain");
+  // prevent the "not well-formed" errors for local XHRs
+  xhr.overrideMimeType("text/plain");
 
-    xhr.send(null);
-  } catch (e) {
-    deferred.reject(e);
-  }
+  // Synchronous!
+  xhr.send(null);
 
   if (xhr.readyState == 4 && (xhr.status == 200 || (xhr.status == 0 && xhr.responseText))) {
     let data = xhr.responseText;
@@ -165,20 +159,16 @@ function get(uri, file) {
     stream.close();
 
     dump("wrote chrome manifest to " + file.path);
-    deferred.resolve(file);
   } else {
-    deferred.reject(xhr.status);
+    throw new Error("XHR synchronous get returned status " + xhr.status);
   }
-
-  return deferred.promise;
 }
 
 /* File */
 
 function getChromeManifestFile() {
   let file = FileUtils.getFile("ProfLD", ["bootstrapper-chrome-manifest", "chrome.manifest"]);
-
-  return Promise.resolve(file);
+  return file;
 }
 
 /* Bootstrap Interface */
@@ -196,52 +186,37 @@ function startup(aData, aReason) {
 
   let theURI = Services.io.newURI(path, null, null);
 
-  getChromeManifestFile()
-    .then(function (file) {
-      return get(theURI, file);
-    })
-    .then(function(file) {
-       // Protocol must be registered before manifest.
-      registerProtocol();
-      return Promise.resolve(file);
-    })
-    .then(function (file) {
-      registerChromeManifest(file.parent);
-      return Promise.resolve(file);
-    })
-    .then(function (file) {
-      Services.prefs.setBoolPref("nglayout.debug.disable_xul_cache", 1);
-      return Promise.resolve(file);
-    })
-    .then(function success(value) {
-      dump("startup success: " + value);
-    }, function failure(reason) {
-      dump("startup failure: " + reason);
-    });
+  try {
+    let file = getChromeManifestFile();
+    getSynchronous(theURI, file);
+
+    // Protocol must be registered before manifest.
+    registerProtocol();
+    registerChromeManifest(file.parent);
+    Services.prefs.setBoolPref("nglayout.debug.disable_xul_cache", 1);
+
+    dump("startup success");
+  } catch (e) {
+    dump("startup failure");
+    Cu.reportError(e);
+  }
 }
 
 function shutdown (aData, aReason) {
   dump("shutdown");
 
-  getChromeManifestFile()
-    .then(function (file) {
-      unregisterChromeManifest(file.parent);
-      return Promise.resolve(file);
-    })
-    .then(function(file) {
-       // Protocol should be unregistered after manifest.
-      unregisterProtocol();
-      return Promise.resolve(file);
-    })
-    .then(function (file) {
-      Services.prefs.setBoolPref("nglayout.debug.disable_xul_cache", 0);
-      return Promise.resolve(file);
-    })
-    .then(function success(value) {
-      dump("shutdown success: " + value);
-    }, function failure(reason) {
-      dump("shutdown failure: " + reason);
-    });
+  try {
+    let file = getChromeManifestFile();
+    unregisterChromeManifest(file.parent);
+    // Protocol should be unregistered after manifest.
+    unregisterProtocol();
+    Services.prefs.setBoolPref("nglayout.debug.disable_xul_cache", 0);
+
+    dump("shutdown success");
+  } catch (e) {
+    dump("shutdown failure");
+    Cu.reportError(e);
+  }
 }
 
 function install (aData, aReason) {

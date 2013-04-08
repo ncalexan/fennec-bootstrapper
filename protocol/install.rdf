@@ -5,9 +5,6 @@
     <em:type>2</em:type>
     <em:bootstrap>true</em:bootstrap>
 
-    <em:name>Fennec Bootstrapper Protocol</em:name>
-    <em:version>0.1</em:version>
-    <em:creator>Nick Alexander</em:creator>
     <em:targetApplication>
       <!-- Fennec Native Java UI -->
       <Description>
@@ -16,13 +13,21 @@
         <em:maxVersion>*</em:maxVersion>
       </Description>
     </em:targetApplication>
-    <!-- Firefox -->
+
     <em:targetApplication>
+      <!-- Firefox Desktop -->
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
         <em:minVersion>13</em:minVersion>
         <em:maxVersion>*</em:maxVersion>
       </Description>
     </em:targetApplication>
+
+    <!-- Front End MetaData -->
+    <em:name>Fennec Bootstrapper</em:name>
+    <em:description>Dynamically load scripts with chrome privileges.</em:description>
+    <em:creator>Nick Alexander</em:creator>
+
+    <em:version>0.1</em:version>
   </Description>
 </RDF>

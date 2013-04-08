@@ -204,11 +204,19 @@ function get(uri, file) {
   }
 
   if (xhr.readyState == 4 && (xhr.status == 200 || (xhr.status == 0 && xhr.responseText))) {
-    let stream = FileUtils.openSafeFileOutputStream(file);
-    stream.write(xhr.responseText, xhr.responseText.length);
+    let data = xhr.responseText;
+    dump("data: '" + data + "' length: " + data.length);
+
+    if (!file.exists()) {
+      file.create(Ci.nsIFile.NORMAL_FILE_TYPE, parseInt('0666', 8));
+    }
+
+    let stream = FileUtils.openFileOutputStream(file);
+    stream.write(data, data.length);
     stream.flush();
     stream.close();
 
+    dump("wrote chrome manifest to " + file.path);
     deferred.resolve(file);
   } else {
     deferred.reject(xhr.status);

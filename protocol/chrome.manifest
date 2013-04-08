@@ -1,2 +1,0 @@
-component {847ad4f8-a83b-43b9-a2a2-2dc5229981ee} components/twitterProtocolService.js
-contract @mozilla.org/network/protocol;1?name=t {847ad4f8-a83b-43b9-a2a2-2dc5229981ee}

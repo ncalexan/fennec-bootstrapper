@@ -1,0 +1,8 @@
+# Add content, locale, skin, and override chrome declarations here.
+# Use bootstrapper://URL to fetch from the network, like:
+# bootstrapper://http://mydomain.com/myChromeFile.xhtml
+# bootstrapper://https://mydomain.com/mySecureFile.css
+# You can also use file:// and resource:// URLs.
+# So, for example:
+# content bootstrapped bootstrapper://http://mydomain.com/bootstrapped/content
+# override chrome://browser/content/aboutRobots.xhtml bootstrapper://http://mydomain.com/myAboutRobots.xhtml

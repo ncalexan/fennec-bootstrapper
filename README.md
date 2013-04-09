@@ -1,57 +1,170 @@
-Fennec bootstrapper
-Source: https://github.com/thebnich/fennec-bootstrapper
-XPI:    http://people.mozilla.com/~bnicholson/bootstrapper.xpi
+Bootstrapper
+============
 
-What it is:
-This extension allows you to dynamically load chrome code in
-mobile/android/chrome/content/ from a remote location. This means you don't
-need to rebuild to test your changes.
+This extension allows you to dynamically load chrome manifests and
+chrome resources from a remote location.  This means you don't need to
+rebuild to test your changes.  This is especially useful when
+developing chrome code for Firefox for Android, since you don't need
+to build and deploy a new APK each development iteration.
 
+This add-on is intended for use **only when developing Firefox chrome
+UI**, so that developers can modify `chrome://` URLs locally without
+having to build, package, and deploy a new Android APK.
 
-How it works:
-When you install the extension, you provide a URL containing:
-  * A content/ directory; this can be pulled directly from your
-    mobile/android/chrome source directory.
-  * A replace.json file; this contains regex replacements used when the
-    bootstrapped scripts are executed. These remove preprocessing directives,
-    replace chrome:// URLs, and do other replacements necessary for running
-    these scripts without having to modify them directly.
+* Source:
 
+  https://github.com/thebnich/fennec-bootstrapper
 
-How to use it:
-1) Copy the contents of remote/ to somewhere on your server.
+* XPI:
 
-2) Replace the content/ directory with the content/ directory from your source.
-   Ideally, this will be a "live" working copy so you don't need to copy files
-   every time you make a change; you can just symlink the directory if you're
-   hosting from your development machine, or you can use lsyncd to synchronize
-   your source directory with a remote server. You can also point to
-   "file:///sdcard/..." if you want to pull the scripts locally from your phone.
+  http://people.mozilla.com/~bnicholson/bootstrapper.xpi
 
-   If using lsyncd, you can add something like this to /etc/rc.local:
-   lsyncd -rsync ~/mozilla/inbound/mobile/android/chrome/content/ people.mozilla.org:/home/bnicholson/public_html/bootstrapped/content -delay 5
+How it works
+------------
 
-   You should end up with something like this on your server:
-   http://people.mozilla.com/~bnicholson/bootstrapped/
+When you install the extension, you provide a URL pointing to a
+`chrome.manifest` file (as described at
+https://developer.mozilla.org/en-US/docs/Chrome_Registration#Instructions_supported_in_bootstrapped_add_ons).
 
-3) Download the extension: http://people.mozilla.com/~bnicholson/bootstrapper.xpi
+This chrome manifest is downloaded and registered when the add-on
+starts (after being installed, enabled, or when Firefox itself
+starts).  When the add-on stops (after being uninstalled or disabled),
+the chrome manifest is unregistered.  This means you can dynamically
+specify chrome resources.
 
-4) When prompted, enter your server URL
-   (e.g., http://people.mozilla.com/~bnicholson/bootstrapped/).
+In addition, the add-on provides a custom `bootstrapper://` protocol
+which allows to load remote resources as chrome resources.  This means
+you can register a chrome override pointing to a resource that will be
+dynamically fetched.  This is not usually possible since it opens a
+major security hole: remember that chrome resources are privileged.
 
-5) Restart.
+How to use it
+-------------
 
-6) At this point, you should be running bootstrapped files from your server.
-   Add a toast to browser.js, restart Fennec, and (hopefully) see it appear!
+1) Modify `remote/chrome.manifest` and populate `remote/` with chrome
+   resources.
 
+   You might want to link `remote/content` to
+   `mobile/android/chrome/content` or similar.
 
-Other notes:
-* The URL is stored in the "extensions.bootstrapper.bootstrapURL" preference.
-* grep for "Bootstrapper" in logcat to look for any errors.
-* to generate the icon files:
+2) Copy the contents of `remote/` to your web server.
+
+   Ideally, this will be a "live" working copy so you don't need to
+   copy files every time you make a change.
+
+   If your Firefox and development machine are on the same network,
+   you can serve the `remote/` directory using any web server
+   software.  Or you can use ssh to remote port forward a visible end
+   point to your local web server.  Or you can use `lsyncd` to
+   synchronize your local `remote/` directory with your web server.
+   Or Dropbox.
+
+3) Download the extension from http://people.mozilla.com/~bnicholson/bootstrapper.xpi
+
+4) When prompted, enter the URL to a chrome.manifest file
+   (e.g., http://people.mozilla.com/~bnicholson/bootstrapped/remote/chrome.manifest).
+
+6) At this point, you should be running bootstrapped files from your web server.
+
+   Make a change to a chrome resource (one made visible by your chrome
+   manifest), restart Firefox, and (hopefully) see it appear!
+
+   * Example for Firefox Desktop
+
+     Edit `remote/chrome.manifest` to include the line
+
+     ```
+     override chrome://browser/content/aboutRobots.xhtml bootstrapper://http://mozilla.org
+     ```
+
+     You should find that `about:robots` takes you to your favourite
+     non-profit's home page.
+
+   * Example for Firefox for Android
+
+     Edit `remote/chrome.manifest` to include the line
+
+     ```
+     override chrome://browser/content/aboutFeedback.xhtml bootstrapper://http://firefox.com
+     ```
+
+     You should find that `about:feedback` takes you to the download
+     page for your favourite browser.
+
+7) To download and register a fresh chrome manifest, you can disable
+   and re-enable the add-on, re-install the add-on, or restart Firefox
+   entirely.
+
+   You can disable the add-on to un-register any chrome changes
+   downloaded and registered this session.
+
+The `bootstrapped://` custom protocol
+-------------------------------------
+
+Short and sweet: `boostrapped://FOO` is rewritten to be `FOO`.  So,
+for example,
+
+```
+override chrome://browser/content/browser.js boostrapped://http://mydomain.com/content/browser.js
+```
+
+will fetch `browser.js` via HTTP.
+
+Notes
+-----
+
+* Firefox caches downloaded chrome manifests and resources, so you
+  will want to configure the web host serving the files to set
+  `Cache-Control: no-cache, no-store` or similar.  If you know how to
+  prevent `bootstrapped://` resources reading and writing the cache,
+  please get in touch!
+
+* The chrome manifest URL is stored in the
+  "extensions.bootstrapper.chromeManifestURL" preference.
+
+* Search for "Bootstrapper" in the console log or Android logcat to
+  find status and error messages.
+
+* To generate the icon files use ImageMagick:
+
+```
   convert boot.png -resize 48x48 -flop ./extension/icon.png
   convert boot.png -resize 64x64 -flop ./extension/icon64.png
-  See
-  http://erikvold.com/blog/index.cfm/2011/2/7/restartless-firefox-addons-part-3-icons
-  and
-  https://developer.mozilla.org/en-US/docs/Install_Manifests#iconURL
+```
+
+  See https://developer.mozilla.org/en-US/docs/Install_Manifests#iconURL.
+
+Acknowledgements
+----------------
+
+* Brian Nicholson (@thebnich)
+
+  Brian solved part of this problem by chrome override-ing a modified
+  browser.xul and supplying Javascript that dynamically fetched
+  browser.js.
+
+* Nick Alexander (@ncalexan)
+
+  Built on Brian's work to dynamically fetch other chrome resources.
+
+* Mike Kaply
+
+  The non-Jetpack, non-bootstrapped add-on described at
+  mike.kaply.com/2011/01/18/writing-a-firefox-protocol-handler
+  "bootstrapped" this solution.
+
+* Alexandre Poirot (@ochameau)
+
+  The custom protocol handler registration was shamelessly hacked out
+  of Alex's
+  https://github.com/ochameau/js-object-tracker/blob/master/lib/chrome-protocol.js.
+
+* Irakli Gozalishvili (@Gozala)
+
+  It was helpful to have Irakli's "API for chrome URI registration"
+  from https://gist.github.com/Gozala/3493210.
+
+* Dave Townsend (@Mossop)
+
+  Provided valuable suggestions in his customary role as
+  irc.mozilla.org/#jetpack guru.

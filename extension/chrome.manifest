@@ -1,3 +1,0 @@
-override chrome://browser/content/browser.xul    chrome://bootstrapper/content/override.xul
-
-content  bootstrapper                            content/

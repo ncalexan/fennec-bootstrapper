@@ -134,6 +134,25 @@ Notes
 
   See https://developer.mozilla.org/en-US/docs/Install_Manifests#iconURL.
 
+* Why a bootstrapped add-on, rather than using the Add-on SDK
+  (Jetpack)?  It's all about startup timing.  The `startup()` method
+  of each add-on is processed before `browser.js` is loaded, but at
+  the moment the Add-on SDK waits for the `session-restore-completed`
+  message to fire beforing running your `main()` method.  This means
+  `browser.js` is not overridden early enough!  I preferred to write
+  my own `bootstrap.js`, and forego the niceties of the Add-on SDK,
+  rather than ship a modified Add-on SDK add-on.  (Aside: that's why
+  this is all in one big file!)
+
+* Can't you do this with chrome.manifests?  Again, It's all about
+  startup timing.  The `bootstrapper://` protocol needs to be
+  registered before any chrome overrides using it are processed.  The
+  protocol is an XPCOM registration, and you can't register XPCOM
+  components in a bootstrapped add-on's chrome manifest, so you either
+  give up restartless add-ons (boo!) or you do it in code.  Once
+  you're registering the protocol in code, you might as well register
+  the chrome manifest too.
+
 Acknowledgements
 ----------------
 

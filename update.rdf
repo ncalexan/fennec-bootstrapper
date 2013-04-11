@@ -9,7 +9,7 @@
 
         <RDF:li>
           <RDF:Description>
-            <em:version>1.1</em:version>
+            <em:version>2.0</em:version>
             <em:targetApplication>
               <RDF:Description>
                 <em:id>{aa3c5121-dab2-40e2-81ca-7ea25febc110}</em:id>

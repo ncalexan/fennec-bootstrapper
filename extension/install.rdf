@@ -4,7 +4,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>bootstrapper@bnicholson.mozilla.com</em:id>
-    <em:version>1.1</em:version>
+    <em:version>2.0</em:version>
     <em:updateURL>https://people.mozilla.com/~bnicholson/bootstrapper-src/update.rdf</em:updateURL>
     <em:type>2</em:type>
     <em:bootstrap>true</em:bootstrap>
@@ -29,7 +29,7 @@
 
     <!-- Front End MetaData -->
     <em:name>Fennec Bootstrapper</em:name>
-    <em:description>Dynamically load scripts with chrome privileges.</em:description>
+    <em:description>Dynamically load chrome.manifest and chrome resources.</em:description>
     <em:creator>Brian Nicholson</em:creator>
   </Description>
 </RDF>

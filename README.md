@@ -11,13 +11,17 @@ This add-on is intended for use **only when developing Firefox chrome
 UI**, so that developers can modify `chrome://` URLs locally without
 having to build, package, and deploy a new Android APK.
 
-* Source:
+* 10 minute screencast at:
 
-  https://github.com/thebnich/fennec-bootstrapper
+  https://vimeo.com/63865441
 
-* XPI:
+* XPI at:
 
-  http://people.mozilla.com/~bnicholson/bootstrapper.xpi
+  http://people.mozilla.org/~nalexander/fennec-bootstrapper/fennec-bootstrapper.xpi
+
+* Code at:
+
+  https://github.com/ncalexan/fennec-bootstrapper
 
 How it works
 ------------
@@ -59,12 +63,11 @@ How to use it
    synchronize your local `remote/` directory with your web server.
    Or Dropbox.
 
-3) Download the extension from http://people.mozilla.com/~bnicholson/bootstrapper.xpi
+3) Download the extension from http://people.mozilla.org/~nalexander/fennec-bootstrapper/fennec-bootstrapper.xpi
 
-4) When prompted, enter the URL to a chrome.manifest file
-   (e.g., http://people.mozilla.com/~bnicholson/bootstrapped/remote/chrome.manifest).
+4) When prompted, enter the URL to a chrome.manifest file.
 
-6) At this point, you should be running bootstrapped files from your web server.
+5) At this point, you should be running bootstrapped files from your web server.
 
    Make a change to a chrome resource (one made visible by your chrome
    manifest), restart Firefox, and (hopefully) see it appear!

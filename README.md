@@ -45,29 +45,33 @@ major security hole: remember that chrome resources are privileged.
 How to use it
 -------------
 
-1) Modify `remote/chrome.manifest` and populate `remote/` with chrome
-   resources.
+1) Set up a web-accessible directory somewhere. This can be on a remote web
+   server, a local web server (if your Firefox and development machine
+   are on the same network), Dropbox, whatever.
 
-   You might want to link `remote/content` to
-   `mobile/android/chrome/content` or similar.
+2) Copy the `remote/chrome.manifest` file from the github repo (direct link:
+   https://raw.github.com/ncalexan/fennec-bootstrapper/master/remote/chrome.manifest)
+   and modify it to reference the chrome resources you wish to
+   be pulled dynamically. Set the override URLs to point to your web-accessible
+   directory from step 1.
 
-2) Copy the contents of `remote/` to your web server.
+3) Copy your modified chrome.manifest file and your chrome resources to
+   the web-accessible directory from step 1.
 
    Ideally, this will be a "live" working copy so you don't need to
-   copy files every time you make a change.
-
-   If your Firefox and development machine are on the same network,
-   you can serve the `remote/` directory using any web server
-   software.  Or you can use ssh to remote port forward a visible end
+   copy files every time you make a change (e.g. using Dropbox).
+   Or you can use ssh to remote port forward a visible end
    point to your local web server.  Or you can use `lsyncd` to
    synchronize your local `remote/` directory with your web server.
-   Or Dropbox.
+   The options are numerous.
 
-3) Download the extension from http://people.mozilla.org/~nalexander/fennec-bootstrapper/fennec-bootstrapper.xpi
+4) Download the extension from http://people.mozilla.org/~nalexander/fennec-bootstrapper/fennec-bootstrapper.xpi
 
-4) When prompted, enter the URL to a chrome.manifest file.
+5) When prompted, enter the URL to the chrome.manifest file.
 
-5) At this point, you should be running bootstrapped files from your web server.
+6) Restart Firefox.
+
+7) At this point, you should be running bootstrapped files from your web server.
 
    Make a change to a chrome resource (one made visible by your chrome
    manifest), restart Firefox, and (hopefully) see it appear!
@@ -94,7 +98,7 @@ How to use it
      You should find that `about:feedback` takes you to the download
      page for your favourite browser.
 
-7) To download and register a fresh chrome manifest, you can disable
+8) To download and register a fresh chrome manifest, you can disable
    and re-enable the add-on, re-install the add-on, or restart Firefox
    entirely.
 
@@ -115,6 +119,15 @@ will fetch `browser.js` via HTTP.
 
 Notes
 -----
+
+* In some cases, the chrome resources are preprocessed by the build
+  system. If this is the case, you must run the preprocessor (or
+  some equivalent) on the files yourself before uploading them to
+  the web server. For example, the script at
+  https://github.com/staktrace/moz-scripts/blob/d557643915527a3c9ce2fa52702c87c1036cae19/jscheck,
+  when run with Fennec's browser.js as an argument, will output
+  an upload-ready file to ~/tmp/check-this.js (this works as of
+  2013-04-15; if you are reading this from the future it may be broken).
 
 * Firefox caches downloaded chrome manifests and resources, so you
   will want to configure the web host serving the files to set
